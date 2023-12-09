@@ -24,36 +24,49 @@ do
     for i = 1, #allClasses do
       local _class = allClasses[i]
 
-      _class.__onNew = _class.__onNew or function() end
-
-      _class.__isInstanceOf = _class.__isInstanceOf or function(obj, classToCompare)
-        local mt = getmetatable(obj)
-        if mt then
-          return mt.__index == classToCompare
+      if not _class.__onNew then
+        function _class.__onNew()
+          -- Do nothing
         end
-        return false
       end
 
-      _class.__isChildOf = _class.__isChildOf or function(classToCompare)
-        local _parents = _class[parentsKey]
-        for i = 1, #_parents do
-          -- The parent list of actual class contains classToCompare
-          if _parents[i] == classToCompare then
-            return true
+      -- __isInstanceOf
+      if not _class.__isInstanceOf then
+        function _class.__isInstanceOf(obj, classToCompare)
+          local mt = getmetatable(obj)
+          if mt then
+            return mt.__index == classToCompare
           end
+          return false
         end
-        return false
       end
 
-      _class.__isParentOf = _class.__isParentOf or function(classToCompare)
-        local _parents = classToCompare[parentsKey]
-        for i = 1, #_parents do
-          -- Actual class is inside the parent list of classToCompare
-          if _class == _parents[i] then
-            return true
+      -- __isChildOf
+      if not _class.__isChildOf then
+        function _class.__isChildOf(classToCompare)
+          local _parents = _class[parentsKey]
+          for i = 1, #_parents do
+            -- The parent list of actual class contains classToCompare
+            if _parents[i] == classToCompare then
+              return true
+            end
           end
+          return false
         end
-        return false
+      end
+
+      -- __isParentOf
+      if not _class.__isParentOf then
+        function _class.__isParentOf(classToCompare)
+          local _parents = classToCompare[parentsKey]
+          for i = 1, #_parents do
+            -- Actual class is inside the parent list of classToCompare
+            if _class == _parents[i] then
+              return true
+            end
+          end
+          return false
+        end
       end
     end
 
