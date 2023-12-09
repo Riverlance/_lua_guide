@@ -151,11 +151,13 @@ end
   -- Using Account (no inherits)
 
   local acc = Account:new{ id = 7, customValue = 9 }
+
+  print('\n> acc values')
   print(acc.id) --> 7
   print(acc.aDefaultValue) --> 8
   print(acc.customValue) --> 9
 
-  -- Working with a private variable
+  print('\n> Working with a private variable')
   print(balance) --> nil -- (because it is private to the do-end chunk above)
   print(acc:balance()) --> 0
   -- balance[account] = 2860 -- attempt to index global 'balance' (a nil value)
@@ -165,21 +167,22 @@ end
   -- Using SpecialAccount (inherits from Account)
 
   local sAcc = SpecialAccount:new{ id = 70 }
+  print('\n> sAcc values')
   print(sAcc.id) --> 70
   print(sAcc.aDefaultValue) --> 8
-  print(sAcc.customValue) --> 9
+  print(sAcc.customValue) --> nil
 
-  print('__isInstanceOf')
+  print('\n> __isInstanceOf')
   print(acc:__isInstanceOf(Account)) --> true
   print(acc:__isInstanceOf(SpecialAccount)) --> false
   print(Account == Account) --> true
   print(SpecialAccount == Account) --> false
 
-  print('__isChildOf')
+  print('\n> __isChildOf')
   print(SpecialAccount.__isChildOf(Account)) --> true
   print(Account.__isChildOf(SpecialAccount)) --> false
 
-  print('__isParentOf')
+  print('\n__isParentOf')
   print(Account.__isParentOf(SpecialAccount)) --> true
   print(SpecialAccount.__isParentOf(Account)) --> false
 --]]
