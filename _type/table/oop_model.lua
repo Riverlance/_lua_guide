@@ -11,6 +11,9 @@ do
     local parents    = {...} -- List of parents (superclasses)
     local allClasses = { } -- Same as the list of parents, but with class as first
 
+    -- class has to be a table
+    assert(type(class) == 'table', "Attempt to create a class with non-table value.")
+
     -- Attach parents on class
     class[parentsKey] = parents
 
@@ -89,6 +92,10 @@ do
     -- Define a new constructor for this new class
     function class:new(obj, ...) -- (o[, ...optionalData...])
       obj = obj or { }
+
+      -- obj has to be a table
+      assert(type(obj) == 'table', "Attempt to instantiate an object with non-table value.")
+
       setmetatable(obj, class) -- Metatable of object is its class
 
       -- Callback - on new
@@ -192,6 +199,9 @@ end
   print(SpecialAccount.__isParentOf(Account)) --> false
 
 
+
+  -- createClass(true) --> Attempt to create a class with non-table value.
+  -- Account:new(true) --> Attempt to instantiate an object with non-table value.
 
   print('\n> Removing acc')
   acc:onDestroy()
