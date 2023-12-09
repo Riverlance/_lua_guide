@@ -34,6 +34,17 @@ do
         return false
       end
 
+      _class.__isChildOf = _class.__isChildOf or function(classToCompare)
+        local _parents = _class[parentsKey]
+        for i = 1, #_parents do
+          -- The parent list of actual class contains classToCompare
+          if _parents[i] == classToCompare then
+            return true
+          end
+        end
+        return false
+      end
+
       _class.__isParentOf = _class.__isParentOf or function(classToCompare)
         local _parents = classToCompare[parentsKey]
         for i = 1, #_parents do
@@ -150,6 +161,10 @@ end
   print(acc:__isInstanceOf(SpecialAccount)) --> false
   print(Account == Account) --> true
   print(SpecialAccount == Account) --> false
+
+  print('__isChildOf')
+  print(SpecialAccount.__isChildOf(Account)) --> true
+  print(Account.__isChildOf(SpecialAccount)) --> false
 
   print('__isParentOf')
   print(Account.__isParentOf(SpecialAccount)) --> true
