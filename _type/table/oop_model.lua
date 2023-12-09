@@ -63,70 +63,74 @@ function createClass(class, ...) -- (class[, ...parents...])
   return class
 end
 
--- Account
-do -- Needed only if you intent to use private variables like `balance`
-  local balance = { } -- Private
 
-  Account = {
-    id = 0,
-    aDefaultValue = 8,
 
-    __onNew = function(self, obj)
-      balance[obj] = 0
-    end
-  }
+---[[
+  -- Account
+  do -- Needed only if you intent to use private variables like `balance`
+    local balance = { } -- Private
 
-  function Account:deposit(v)
-    balance[self] = balance[self] + v
-  end
+    Account = {
+      id = 0,
+      aDefaultValue = 8,
 
-  function Account:withdraw(v)
-    if v > balance[self] then
-      error 'Insufficient funds'
+      __onNew = function(self, obj)
+        balance[obj] = 0
+      end
+    }
+
+    function Account:deposit(v)
+      balance[self] = balance[self] + v
     end
 
-    balance[self] = balance[self] - v
+    function Account:withdraw(v)
+      if v > balance[self] then
+        error 'Insufficient funds'
+      end
+
+      balance[self] = balance[self] - v
+    end
+
+    function Account:balance()
+      return balance[self]
+    end
+
+    Account = createClass(Account)
   end
 
-  function Account:balance()
-    return balance[self]
-  end
+  -- SpecialAccount
+  -- do-end not needed, because it uses no private variables
 
-  Account = createClass(Account)
-end
+  SpecialAccount = { limit = 1000. }
 
--- SpecialAccount
--- do-end not needed, because it uses no private variables
-
-SpecialAccount = { limit = 1000. }
-
-SpecialAccount = createClass(SpecialAccount, Account)
+  SpecialAccount = createClass(SpecialAccount, Account)
 
 
 
--- Using Account (no inherits)
+  -- Using Account (no inherits)
 
-local acc = Account:new{ id = 7, customValue = 9 }
-print(acc.id) --> 7
-print(acc.aDefaultValue) --> 8
-print(acc.customValue) --> 9
+  local acc = Account:new{ id = 7, customValue = 9 }
+  print(acc.id) --> 7
+  print(acc.aDefaultValue) --> 8
+  print(acc.customValue) --> 9
 
--- Working with a private variable
-print(balance) --> nil -- (because it is private to the do-end chunk above)
-print(acc:balance()) --> 0
--- balance[account] = 2860 -- attempt to index global 'balance' (a nil value)
-acc:deposit(2860)
-print(acc:balance()) --> 2860
+  -- Working with a private variable
+  print(balance) --> nil -- (because it is private to the do-end chunk above)
+  print(acc:balance()) --> 0
+  -- balance[account] = 2860 -- attempt to index global 'balance' (a nil value)
+  acc:deposit(2860)
+  print(acc:balance()) --> 2860
 
--- Using SpecialAccount (inherits from Account)
+  -- Using SpecialAccount (inherits from Account)
 
-local sAcc = SpecialAccount:new{ id = 70 }
-print(sAcc.id) --> 70
-print(sAcc.aDefaultValue) --> 8
-print(sAcc.customValue) --> 9
+  local sAcc = SpecialAccount:new{ id = 70 }
+  print(sAcc.id) --> 70
+  print(sAcc.aDefaultValue) --> 8
+  print(sAcc.customValue) --> 9
 
--- __is
-print(acc:__is(Account)) --> true
-print(acc:__is(SpecialAccount)) --> false
-print(Account:__is(Account, true)) --> true
-print(SpecialAccount:__is(Account, true)) --> false
+  -- __is
+  print(acc:__is(Account)) --> true
+  print(acc:__is(SpecialAccount)) --> false
+  print(Account:__is(Account, true)) --> true
+  print(SpecialAccount:__is(Account, true)) --> false
+--]]
