@@ -35,9 +35,10 @@ do
       end
 
       _class.__isParentOf = _class.__isParentOf or function(classToCompare)
-        local classToCompareParents = classToCompare[parentsKey]
-        for i = 1, #classToCompareParents do
-          if _class == classToCompareParents[i] then
+        local _parents = classToCompare[parentsKey]
+        for i = 1, #_parents do
+          -- Actual class is inside the parent list of classToCompare
+          if _class == _parents[i] then
             return true
           end
         end
