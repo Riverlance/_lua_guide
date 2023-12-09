@@ -3,77 +3,80 @@ dofile('print_r.lua')
 
 
 
-local parentsKey = { } -- Key id to alloc parents on class
-function createClass(class, ...) -- (class[, ...parents...])
-  class            = class or { }
-  local parents    = {...} -- List of parents (superclasses)
-  local allClasses = { } -- Same as the list of parents, but with class as first
+do
+  local parentsKey = { } -- Key id to alloc parents on class
 
-  -- Attach parents on class
-  class[parentsKey] = parents
+  function createClass(class, ...) -- (class[, ...parents...])
+    class            = class or { }
+    local parents    = {...} -- List of parents (superclasses)
+    local allClasses = { } -- Same as the list of parents, but with class as first
 
-  -- Fill allClasses
-  allClasses[#allClasses + 1] = class
-  for i = 1, #parents do
-    allClasses[#allClasses + 1] = parents[i]
-  end
+    -- Attach parents on class
+    class[parentsKey] = parents
 
-  -- Prepare class and its parents
-  for i = 1, #allClasses do
-    local _class = allClasses[i]
-
-    _class.__onNew = _class.__onNew or function() end
-
-    _class.__isInstanceOf = _class.__isInstanceOf or function(obj, classToCompare)
-      local mt = getmetatable(obj)
-      if mt then
-        return mt.__index == classToCompare
-      end
-      return false
-    end
-
-    _class.__isParentOf = _class.__isParentOf or function(classToCompare)
-      local classToCompareParents = classToCompare[parentsKey]
-      for i = 1, #classToCompareParents do
-        if _class == classToCompareParents[i] then
-          return true
-        end
-      end
-      return false
-    end
-  end
-
-  -- Metatable of class
-  setmetatable(class, {
-    -- Class searches for absent methods in its list of parents
-    __index = function(t, k)
-      -- Look up for 'k' in list of tables 'parents'
-      for i = 1, #parents do
-        if parents[i][k] then -- If key exists in this parent, return the value of it
-          return parents[i][k]
-        end
-      end
-    end
-  })
-
-  -- Prepare 'class' to be the metatable of its instances
-  class.__index = class
-
-  -- Define a new constructor for this new class
-  function class:new(obj, ...) -- (o[, ...optionalData...])
-    obj = obj or { }
-    setmetatable(obj, class) -- Metatable of object is its class
-
-    -- Callback - on new
+    -- Fill allClasses
+    allClasses[#allClasses + 1] = class
     for i = 1, #parents do
-      parents[i]:__onNew(obj, ...)
+      allClasses[#allClasses + 1] = parents[i]
     end
-    class:__onNew(obj, ...)
 
-    return obj
+    -- Prepare class and its parents
+    for i = 1, #allClasses do
+      local _class = allClasses[i]
+
+      _class.__onNew = _class.__onNew or function() end
+
+      _class.__isInstanceOf = _class.__isInstanceOf or function(obj, classToCompare)
+        local mt = getmetatable(obj)
+        if mt then
+          return mt.__index == classToCompare
+        end
+        return false
+      end
+
+      _class.__isParentOf = _class.__isParentOf or function(classToCompare)
+        local classToCompareParents = classToCompare[parentsKey]
+        for i = 1, #classToCompareParents do
+          if _class == classToCompareParents[i] then
+            return true
+          end
+        end
+        return false
+      end
+    end
+
+    -- Metatable of class
+    setmetatable(class, {
+      -- Class searches for absent methods in its list of parents
+      __index = function(t, k)
+        -- Look up for 'k' in list of tables 'parents'
+        for i = 1, #parents do
+          if parents[i][k] then -- If key exists in this parent, return the value of it
+            return parents[i][k]
+          end
+        end
+      end
+    })
+
+    -- Prepare 'class' to be the metatable of its instances
+    class.__index = class
+
+    -- Define a new constructor for this new class
+    function class:new(obj, ...) -- (o[, ...optionalData...])
+      obj = obj or { }
+      setmetatable(obj, class) -- Metatable of object is its class
+
+      -- Callback - on new
+      for i = 1, #parents do
+        parents[i]:__onNew(obj, ...)
+      end
+      class:__onNew(obj, ...)
+
+      return obj
+    end
+
+    return class
   end
-
-  return class
 end
 
 
