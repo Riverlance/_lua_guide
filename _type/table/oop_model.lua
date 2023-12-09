@@ -18,10 +18,8 @@ function createClass(class, ...) -- (class[, ...parents...])
   for i = 1, #allClasses do
     local _class = allClasses[i]
     _class.__onNew = _class.__onNew or function() end
-    _class.__is    = _class.__is or function(classOrObj, _classOrObj, classCheck)
-      if classCheck then
-        return classOrObj == _classOrObj
-      end
+
+    _class.__isInstanceOf = _class.__isInstanceOf or function(classOrObj, _classOrObj)
       local mt = getmetatable(classOrObj)
       if mt then
         return mt.__index == _classOrObj
@@ -128,9 +126,9 @@ end
   print(sAcc.aDefaultValue) --> 8
   print(sAcc.customValue) --> 9
 
-  -- __is
-  print(acc:__is(Account)) --> true
-  print(acc:__is(SpecialAccount)) --> false
-  print(Account:__is(Account, true)) --> true
-  print(SpecialAccount:__is(Account, true)) --> false
+  -- __isInstanceOf
+  print(acc:__isInstanceOf(Account)) --> true
+  print(acc:__isInstanceOf(SpecialAccount)) --> false
+  print(Account == Account) --> true
+  print(SpecialAccount == Account) --> false
 --]]
