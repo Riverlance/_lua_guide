@@ -3,10 +3,14 @@ dofile('print_r.lua')
 
 
 
+local parentsKey = { } -- Key id to alloc parents on class
 function createClass(class, ...) -- (class[, ...parents...])
   class            = class or { }
   local parents    = {...} -- List of parents (superclasses)
   local allClasses = { } -- Same as the list of parents, but with class as first
+
+  -- Attach parents on class
+  class[parentsKey] = parents
 
   -- Fill allClasses
   allClasses[#allClasses + 1] = class
@@ -17,10 +21,6 @@ function createClass(class, ...) -- (class[, ...parents...])
   -- Prepare class and its parents
   for i = 1, #allClasses do
     local _class = allClasses[i]
-
-    function _class.getParents()
-      return parents
-    end
 
     _class.__onNew = _class.__onNew or function() end
 
@@ -33,7 +33,7 @@ function createClass(class, ...) -- (class[, ...parents...])
     end
 
     _class.__isParentOf = _class.__isParentOf or function(classToCompare)
-      local classToCompareParents = classToCompare.getParents()
+      local classToCompareParents = classToCompare[parentsKey]
       for i = 1, #classToCompareParents do
         if _class == classToCompareParents[i] then
           return true
