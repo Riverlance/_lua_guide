@@ -17,12 +17,27 @@ function createClass(class, ...) -- (class[, ...parents...])
   -- Prepare class and its parents
   for i = 1, #allClasses do
     local _class = allClasses[i]
+
+    function _class.getParents()
+      return parents
+    end
+
     _class.__onNew = _class.__onNew or function() end
 
     _class.__isInstanceOf = _class.__isInstanceOf or function(obj, classToCompare)
       local mt = getmetatable(obj)
       if mt then
         return mt.__index == classToCompare
+      end
+      return false
+    end
+
+    _class.__isParentOf = _class.__isParentOf or function(classToCompare)
+      local classToCompareParents = classToCompare.getParents()
+      for i = 1, #classToCompareParents do
+        if _class == classToCompareParents[i] then
+          return true
+        end
       end
       return false
     end
@@ -126,9 +141,13 @@ end
   print(sAcc.aDefaultValue) --> 8
   print(sAcc.customValue) --> 9
 
-  -- __isInstanceOf
+  print('__isInstanceOf')
   print(acc:__isInstanceOf(Account)) --> true
   print(acc:__isInstanceOf(SpecialAccount)) --> false
   print(Account == Account) --> true
   print(SpecialAccount == Account) --> false
+
+  print('__isParentOf')
+  print(Account.__isParentOf(SpecialAccount)) --> true
+  print(SpecialAccount.__isParentOf(Account)) --> false
 --]]
