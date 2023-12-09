@@ -16,7 +16,18 @@ function createClass(class, ...) -- (class[, ...parents...])
 
   -- Prepare class and its parents
   for i = 1, #allClasses do
-    allClasses[i].__onNew = allClasses[i].__onNew or function() end
+    local _class = allClasses[i]
+    _class.__onNew = _class.__onNew or function() end
+    _class.__is    = _class.__is or function(classOrObj, _classOrObj, classCheck)
+      if classCheck then
+        return classOrObj == _classOrObj
+      end
+      local mt = getmetatable(classOrObj)
+      if mt then
+        return mt.__index == _classOrObj
+      end
+      return false
+    end
   end
 
   -- Metatable of class
@@ -32,7 +43,7 @@ function createClass(class, ...) -- (class[, ...parents...])
     end
   })
 
-  -- Prepare 'c' to be the metatable of its instances
+  -- Prepare 'class' to be the metatable of its instances
   class.__index = class
 
   -- Define a new constructor for this new class
@@ -52,10 +63,8 @@ function createClass(class, ...) -- (class[, ...parents...])
   return class
 end
 
+-- Account
 do -- Needed only if you intent to use private variables like `balance`
-
-  -- Account
-
   local balance = { } -- Private
 
   Account = {
@@ -72,6 +81,10 @@ do -- Needed only if you intent to use private variables like `balance`
   end
 
   function Account:withdraw(v)
+    if v > balance[self] then
+      error 'Insufficient funds'
+    end
+
     balance[self] = balance[self] - v
   end
 
@@ -82,16 +95,38 @@ do -- Needed only if you intent to use private variables like `balance`
   Account = createClass(Account)
 end
 
+-- SpecialAccount
+-- do-end not needed, because it uses no private variables
+
+SpecialAccount = { limit = 1000. }
+
+SpecialAccount = createClass(SpecialAccount, Account)
 
 
-local account = Account:new{ id = 7, customValue = 9 }
-print(account.id) --> 7
-print(account.aDefaultValue) --> 8
-print(account.customValue) --> 9
+
+-- Using Account (no inherits)
+
+local acc = Account:new{ id = 7, customValue = 9 }
+print(acc.id) --> 7
+print(acc.aDefaultValue) --> 8
+print(acc.customValue) --> 9
 
 -- Working with a private variable
 print(balance) --> nil -- (because it is private to the do-end chunk above)
-print(account:balance()) --> 0
+print(acc:balance()) --> 0
 -- balance[account] = 2860 -- attempt to index global 'balance' (a nil value)
-account:deposit(2860)
-print(account:balance()) --> 2860
+acc:deposit(2860)
+print(acc:balance()) --> 2860
+
+-- Using SpecialAccount (inherits from Account)
+
+local sAcc = SpecialAccount:new{ id = 70 }
+print(sAcc.id) --> 70
+print(sAcc.aDefaultValue) --> 8
+print(sAcc.customValue) --> 9
+
+-- __is
+print(acc:__is(Account)) --> true
+print(acc:__is(SpecialAccount)) --> false
+print(Account:__is(Account, true)) --> true
+print(SpecialAccount:__is(Account, true)) --> false
