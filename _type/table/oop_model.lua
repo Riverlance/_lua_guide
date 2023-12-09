@@ -120,6 +120,11 @@ end
       end
     }
 
+    -- Used to remove the private variables when this account is not used anymore
+    function Account:onDestroy()
+      balance[self] = nil
+    end
+
     function Account:deposit(v)
       balance[self] = balance[self] + v
     end
@@ -185,4 +190,12 @@ end
   print('\n__isParentOf')
   print(Account.__isParentOf(SpecialAccount)) --> true
   print(SpecialAccount.__isParentOf(Account)) --> false
+
+
+
+  print('\n> Removing acc')
+  acc:onDestroy()
+  print(acc:balance()) --> nil
+  acc = nil
+  print(acc) --> nil
 --]]
