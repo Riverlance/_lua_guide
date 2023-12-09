@@ -110,7 +110,7 @@ dofile('print_r.lua')
 
   function Account:withdraw(v)
     if v > self.balance then
-      error 'insufficient funds'
+      error 'Insufficient funds'
     end
 
     self.balance = self.balance - v
@@ -143,7 +143,7 @@ dofile('print_r.lua')
 
   function SpecialAccount:withdraw(v)
     if v - self.balance >= self:getLimit() then
-      error 'insufficient funds'
+      error 'Insufficient funds'
     end
     self.balance = self.balance - v
   end
@@ -206,7 +206,7 @@ dofile('print_r.lua')
       end
     })
 
-    -- Prepare 'c' to be the metatable of its instances
+    -- Prepare 'class' to be the metatable of its instances
     class.__index = class
 
     -- Define a new constructor for this new class
@@ -229,7 +229,7 @@ dofile('print_r.lua')
 
   function Account:withdraw(v)
     if v > self.balance then
-      error 'insufficient funds'
+      error 'Insufficient funds'
     end
 
     self.balance = self.balance - v
