@@ -19,10 +19,10 @@ function createClass(class, ...) -- (class[, ...parents...])
     local _class = allClasses[i]
     _class.__onNew = _class.__onNew or function() end
 
-    _class.__isInstanceOf = _class.__isInstanceOf or function(classOrObj, _classOrObj)
-      local mt = getmetatable(classOrObj)
+    _class.__isInstanceOf = _class.__isInstanceOf or function(obj, classToCompare)
+      local mt = getmetatable(obj)
       if mt then
-        return mt.__index == _classOrObj
+        return mt.__index == classToCompare
       end
       return false
     end
