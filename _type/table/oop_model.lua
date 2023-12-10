@@ -234,6 +234,12 @@ end
   acc:deposit(2860)
   print(acc:balance()) --> 2860
 
+  print('\n> Function that only the object acc have')
+  function acc:getCustomValueStr()
+    return ('My custom value is %d.'):format(self.customValue)
+  end
+  print(acc:getCustomValueStr()) --> My custom value is 9.
+
   print('\n> Usage example of Account.__onCall (Account() to get Account.classAttributeValue; Account(value) to set Account.classAttributeValue)')
   print(Account(), Account.classAttributeValue, acc.classAttributeValue) --> nil nil nil
   Account(777)
