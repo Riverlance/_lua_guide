@@ -27,6 +27,14 @@ do
     for i = 1, #allClasses do
       local _class = allClasses[i]
 
+      -- Callback - __onCall
+      if not _class.__onCall then
+        function _class.__onCall()
+          return nil
+        end
+      end
+
+      -- Callback - __onNew
       if not _class.__onNew then
         function _class.__onNew()
           -- Do nothing
@@ -75,6 +83,20 @@ do
 
     -- Metatable of class
     setmetatable(class, {
+      __call = function(self, ...)
+        -- Callback - __onCall
+        local ret = self:__onCall(...)
+        if ret ~= nil then
+          return ret
+        end
+        for i = 1, #parents do
+          ret = parents[i]:__onCall(...)
+          if ret ~= nil then
+            return ret
+          end
+        end
+      end,
+
       -- Class searches for absent methods in its list of parents
       __index = function(self, k)
         -- Look up for 'k' in list of tables 'parents'
@@ -121,6 +143,14 @@ end
     Account = {
       id = 0,
       aDefaultValue = 8,
+
+      __onCall = function(self, value)
+        if type(value) == 'number' then
+          self.classAttributeValue = value
+          return
+        end
+        return self.classAttributeValue
+      end,
 
       __onNew = function(self, obj)
         balance[obj] = 0
@@ -175,6 +205,13 @@ end
   -- balance[account] = 2860 -- attempt to index global 'balance' (a nil value)
   acc:deposit(2860)
   print(acc:balance()) --> 2860
+
+  print('\nUsage example of Account.__onCall (Account() to get Account.classAttributeValue; Account(value) to set Account.classAttributeValue)')
+  print(Account(), Account.classAttributeValue, acc.classAttributeValue) --> nil nil nil
+  Account(777)
+  print(Account(), Account.classAttributeValue, acc.classAttributeValue) --> 777 777 777
+
+
 
   -- Using SpecialAccount (inherits from Account)
 
