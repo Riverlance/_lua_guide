@@ -251,7 +251,7 @@ dofile('print_r.lua')
 
   Named = createClass(Named)
 
-  -- NamedAccount (subclass of both Account and Named)
+  -- NamedAccount (child of both Account and Named)
 
   NamedAccount = createClass(Account, Named)
 

@@ -216,6 +216,25 @@ end
 
   SpecialAccount = createClass(SpecialAccount, Account)
 
+  -- Named
+
+  Named = { }
+
+  function Named:getname()
+    return self.name
+  end
+
+  function Named:setname(n)
+    self.name = n
+  end
+
+  Named = createClass(Named)
+
+  -- NamedAccount (child of both Account and Named)
+
+  NamedAccount = { }
+  NamedAccount = createClass(NamedAccount, Account, Named)
+
 
 
   -- Using Account (no inherits)
@@ -258,6 +277,16 @@ end
   print(sAcc.id) --> 70
   print(sAcc.aDefaultValue) --> 8
   print(sAcc.customValue) --> nil
+
+
+
+  -- Using NamedAccount (inherits from Account and Named)
+
+  local nAcc = NamedAccount:new{ id = 777, name = 'River' }
+  print('\n> nAcc values')
+  print(nAcc:getname()) --> River
+  nAcc:deposit(2860)
+  print(nAcc:balance()) --> 2860
 
 
 
