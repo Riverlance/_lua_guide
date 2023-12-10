@@ -90,6 +90,8 @@ do
 
     -- Metatable of class
     setmetatable(class, {
+      __metatable = 'This metatable is protected.',
+
       __call = function(self, ...)
         -- Callback - __onCall
         local ret = self:__onCall(...)
@@ -267,6 +269,10 @@ end
 
 
 
+  print('\n> Errors')
+  print(getmetatable(acc)) --> table: 00A710B8
+  print(getmetatable(Account)) --> This metatable is protected.
+  -- setmetatable(Account, { }) --> cannot change a protected metatable
   -- createClass(true) --> Attempt to create a class with non-table value.
   -- Account:new(true) --> Attempt to instantiate an object with non-table value.
 
