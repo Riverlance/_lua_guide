@@ -112,7 +112,7 @@ do
     class.__index = class
 
     -- Define a new constructor for this new class
-    function class:new(obj, ...) -- (o[, ...optionalData...])
+    function class:new(obj, ...) -- (obj[, ...optionalData...])
       obj = obj or { }
 
       -- obj has to be a table
@@ -206,7 +206,7 @@ end
   acc:deposit(2860)
   print(acc:balance()) --> 2860
 
-  print('\nUsage example of Account.__onCall (Account() to get Account.classAttributeValue; Account(value) to set Account.classAttributeValue)')
+  print('\n> Usage example of Account.__onCall (Account() to get Account.classAttributeValue; Account(value) to set Account.classAttributeValue)')
   print(Account(), Account.classAttributeValue, acc.classAttributeValue) --> nil nil nil
   Account(777)
   print(Account(), Account.classAttributeValue, acc.classAttributeValue) --> 777 777 777
@@ -231,7 +231,7 @@ end
   print(SpecialAccount.__isChildOf(Account)) --> true
   print(Account.__isChildOf(SpecialAccount)) --> false
 
-  print('\n__isParentOf')
+  print('\n> __isParentOf')
   print(Account.__isParentOf(SpecialAccount)) --> true
   print(SpecialAccount.__isParentOf(Account)) --> false
 
