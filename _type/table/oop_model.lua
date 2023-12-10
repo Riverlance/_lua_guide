@@ -160,7 +160,7 @@ end
     local balance = { } -- Private
 
     Account = {
-      id = 0,
+      id            = 0,
       aDefaultValue = 8,
 
       __onCall = function(self, value)
@@ -176,7 +176,6 @@ end
         if obj.id < 0 then
           return false
         end
-
         return true
       end,
 
@@ -239,7 +238,8 @@ end
 
   -- Using Account (no inherits)
 
-  local acc = Account:new{ id = 7, customValue = 9 }
+  local acc  = Account:new{ id = 7, customValue = 9 }
+  local acc2 = Account:new{ id = -7 } -- Cannot have accounts with negative id, so it will return nil
 
   print('\n> acc values')
   print(acc.id) --> 7
@@ -265,8 +265,7 @@ end
   print(Account(), Account.classAttributeValue, acc.classAttributeValue) --> 777 777 777
 
   print('\n> Usage example of Account.__onCheckNew')
-  local acc2 = Account:new{ id = -7 }
-  print(acc2) --> nil -- Cannot have accounts with negative id
+  print(acc2) --> nil
 
 
 
