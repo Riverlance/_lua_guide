@@ -259,6 +259,8 @@ end
   print(sAcc.aDefaultValue) --> 8
   print(sAcc.customValue) --> nil
 
+
+
   print('\n> __isInstanceOf')
   print(acc:__isInstanceOf(Account)) --> true
   print(acc:__isInstanceOf(SpecialAccount)) --> false
@@ -272,8 +274,6 @@ end
   print('\n> __isParentOf')
   print(Account.__isParentOf(SpecialAccount)) --> true
   print(SpecialAccount.__isParentOf(Account)) --> false
-
-
 
   print('\n> Errors')
   print(getmetatable(acc)) --> table: 00A710B8
