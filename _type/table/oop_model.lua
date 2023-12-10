@@ -1,6 +1,40 @@
 
 dofile('print_r.lua')
 
+function string:starts(start)
+  return self:sub(1, #start) == start
+end
+
+function table.copy(t, keys) -- (t[, keys])
+  local ret = { }
+
+  if keys then
+    for _, k in ipairs(keys) do
+      local v = t[k]
+      if type(v) == 'table' then
+        ret[k] = table.copy(v)
+      else
+        ret[k] = v
+      end
+    end
+  else
+    for k, v in pairs(t) do
+      if type(v) == 'table' then
+        ret[k] = table.copy(v)
+      else
+        ret[k] = v
+      end
+    end
+  end
+
+  local metaTable = getmetatable(t)
+  if metaTable then
+    setmetatable(ret, metaTable)
+  end
+
+  return ret
+end
+
 
 
 do
@@ -139,6 +173,15 @@ do
 
       setmetatable(obj, class) -- Metatable of object is its class
 
+      -- Duplicate tables of obj (except from variables that the key name starts with '__' and from tables with metatable)
+      for k, v in pairs(class) do
+        if (type(k) == 'string' and not k:starts('__')) and type(v) == 'table' and
+           not getmetatable(v) and obj[k] == v -- Has not metatable and has v is original value of class
+        then
+          obj[k] = table.copy(v)
+        end
+      end
+
       -- Callback - __onNew
       for i = 1, #parents do
         parents[i]:__onNew(obj, ...)
@@ -162,6 +205,8 @@ end
     Account = {
       id            = 0,
       aDefaultValue = 8,
+      __classTable  = { 7 },
+      objTable      = { 8 },
 
       __onCall = function(self, value)
         if type(value) == 'number' then
@@ -239,7 +284,8 @@ end
   -- Using Account (no inherits)
 
   local acc  = Account:new{ id = 7, customValue = 9 }
-  local acc2 = Account:new{ id = -7 } -- Cannot have accounts with negative id, so it will return nil
+  local acc2 = Account:new{ id = 8 }
+  local acc3 = Account:new{ id = -7 } -- Cannot have accounts with negative id, so it will return nil
 
   print('\n> acc values')
   print(acc.id) --> 7
@@ -259,13 +305,23 @@ end
   end
   print(acc:getCustomValueStr()) --> My custom value is 9.
 
+  print('\n> Checking a class table')
+  print_r(Account.__classTable, acc.__classTable) --> (table: 00B2A5C0){ 7 } (table: 00B2A5C0){ 7 } -- Same table reference
+  table.insert(acc.__classTable, 9)
+  print_r(Account.__classTable, acc.__classTable) --> (table: 00B2A5C0){ 7, 9 } (table: 00B2A5C0){ 7, 9 } -- Same table reference
+
+  print('\n> Checking a normal table (which is duplicated from class)')
+  print_r(Account.objTable, acc.objTable) --> (table: 0092AA58){ 8 } (table: 009206D8){ 8 } -- Different table reference
+  table.insert(acc.objTable, 9)
+  print_r(Account.objTable, acc.objTable) --> (table: 0092AA58){ 8 } (table: 009206D8){ 8, 9 } -- Different table reference
+
   print('\n> Usage example of Account.__onCall (Account() to get Account.classAttributeValue; Account(value) to set Account.classAttributeValue)')
   print(Account(), Account.classAttributeValue, acc.classAttributeValue) --> nil nil nil
   Account(777)
   print(Account(), Account.classAttributeValue, acc.classAttributeValue) --> 777 777 777
 
   print('\n> Usage example of Account.__onCheckNew')
-  print(acc2) --> nil
+  print(acc3) --> nil
 
 
 
