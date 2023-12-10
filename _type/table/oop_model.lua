@@ -34,6 +34,13 @@ do
         end
       end
 
+      -- Callback - __onCheckNew
+      if not _class.__onCheckNew then
+        function _class.__onCheckNew()
+          return true
+        end
+      end
+
       -- Callback - __onNew
       if not _class.__onNew then
         function _class.__onNew()
@@ -118,6 +125,16 @@ do
       -- obj has to be a table
       assert(type(obj) == 'table', "Attempt to instantiate an object with non-table value.")
 
+      -- Callback - __onCheckNew
+      for i = 1, #parents do
+        if not parents[i]:__onCheckNew(obj, ...) then
+          return nil
+        end
+      end
+      if not class:__onCheckNew(obj, ...) then
+        return nil
+      end
+
       setmetatable(obj, class) -- Metatable of object is its class
 
       -- Callback - __onNew
@@ -152,7 +169,16 @@ end
         return self.classAttributeValue
       end,
 
-      __onNew = function(self, obj)
+      __onCheckNew = function(self, obj, ...)
+        -- Cannot have accounts with negative id
+        if obj.id < 0 then
+          return false
+        end
+
+        return true
+      end,
+
+      __onNew = function(self, obj, ...)
         balance[obj] = 0
       end
     }
@@ -210,6 +236,10 @@ end
   print(Account(), Account.classAttributeValue, acc.classAttributeValue) --> nil nil nil
   Account(777)
   print(Account(), Account.classAttributeValue, acc.classAttributeValue) --> 777 777 777
+
+  print('\n> Usage example of Account.__onCheckNew')
+  local acc2 = Account:new{ id = -7 }
+  print(acc2) --> nil -- Cannot have accounts with negative id
 
 
 
