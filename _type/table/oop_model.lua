@@ -33,7 +33,7 @@ do
         end
       end
 
-      -- __isInstanceOf
+      -- Method - __isInstanceOf
       if not _class.__isInstanceOf then
         function _class.__isInstanceOf(obj, classToCompare)
           local mt = getmetatable(obj)
@@ -44,7 +44,7 @@ do
         end
       end
 
-      -- __isChildOf
+      -- Method - __isChildOf
       if not _class.__isChildOf then
         function _class.__isChildOf(classToCompare)
           local _parents = _class[parentsKey]
@@ -58,7 +58,7 @@ do
         end
       end
 
-      -- __isParentOf
+      -- Method - __isParentOf
       if not _class.__isParentOf then
         function _class.__isParentOf(classToCompare)
           local _parents = classToCompare[parentsKey]
@@ -76,7 +76,7 @@ do
     -- Metatable of class
     setmetatable(class, {
       -- Class searches for absent methods in its list of parents
-      __index = function(t, k)
+      __index = function(self, k)
         -- Look up for 'k' in list of tables 'parents'
         for i = 1, #parents do
           if parents[i][k] then -- If key exists in this parent, return the value of it
@@ -98,7 +98,7 @@ do
 
       setmetatable(obj, class) -- Metatable of object is its class
 
-      -- Callback - on new
+      -- Callback - __onNew
       for i = 1, #parents do
         parents[i]:__onNew(obj, ...)
       end
