@@ -214,7 +214,7 @@ end
       __newindex = function(self, k, v)
         error('attempt to update a read-only table')
       end,
-      __len = function (_t)
+      __len = function(_t)
         return #t
       end,
     })

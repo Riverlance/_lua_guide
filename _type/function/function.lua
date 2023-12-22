@@ -189,7 +189,7 @@ print(unpack{ 7, 8, 9 }) --> 7 8 9
   names = {"Peter", "Paul", "Mary"}
   grades = {Mary = 10, Paul = 7, Peter = 8}
   function sortbygrade(names, grades)
-    table.sort(names, function (n1, n2)
+    table.sort(names, function(n1, n2)
       return grades[n1] > grades[n2] -- compare the grades
     end)
   end
