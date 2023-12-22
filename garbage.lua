@@ -313,6 +313,11 @@ do
 end
 
 --[[
+  In this example, we first create a table and give it a metatable that has a __gc metamethod.
+  Then we erase the only link to the table (the global variable o) and force a complete garbage collection.
+  During the collection, Lua detects that the table is no longer accessible and, therefore, calls its finalizer -- the __gc metamethod.
+]]
+--[[
   o = { x = 'hi' }
   setmetatable(o, { __gc = function(o) print(o.x) end })
   o = nil
@@ -320,6 +325,16 @@ end
   collectgarbage() --> hi
 --]]
 
+--[[
+  A subtlety of finalizers in Lua is the concept of marking an object for finalization.
+  We mark an object for finalization by setting a metatable for it with a non-null __gc metamethod.
+  If we do not mark the object, it will not be finalized.
+  Most code we write works naturally, but some strange cases can occur, like below.
+
+  Here, the metatable we set for o does not have a __gc metamethod, so the object is not marked for finalization.
+  Even if we later add a __gc field to the metatable, Lua does not detect that assignment as something special, so it will not mark the object.
+  As we said, this is seldom a problem; it is not usual to change metamethods after setting a metatable.
+]]
 --[[
   o  = { x = 'hi' }
   mt = { }
@@ -332,6 +347,11 @@ end
 --]]
 
 --[[
+  If you really need to set the metamethod later, you can provide any value for the __gc field, as a placeholder:
+  Now, because the metatable has a __gc field, o is properly marked for finalization.
+  There is no problem if you do not set a metamethod later; Lua only calls the finalizer if it is a proper function.
+]]
+--[[
   o  = { x = 'hi' }
   mt = { __gc = true }
 
@@ -342,6 +362,11 @@ end
   collectgarbage() --> hi
 --]]
 
+--[[
+  When the collector finalizes several objects in the same cycle, it calls their finalizers in the reverse order that the objects were marked for finalization.
+  Consider the next example, which creates a linked list of objects with finalizers below.
+  The first object to be finalized is object 3, which was the last to be marked.
+]]
 --[[
   mt = { __gc = function(o) print(o[1]) end }
 
@@ -355,6 +380,29 @@ end
 --]]
 
 --[[
+  Another tricky point about finalizers is resurrection.
+  When a finalizer is called, it gets the object being finalized as a parameter.
+
+  So, the object becomes alive again, at least during the finalization.
+  I call this a transient resurrection.
+
+  While the finalizer runs, nothing stops it from storing the object in a global variable, for instance, so that it remains accessible after the finalizer returns.
+  I call this a permanent resurrection.
+
+  Resurrection must be transitive.
+  Consider the following piece of code below.
+  The finalizer for B accesses A, so A cannot be collected before the finalization of B.
+  Lua must resurrect both B and A before running that finalizer.
+
+  Because of resurrection, Lua collects objects with finalizers in two phases.
+  1) The first time the collector detects that an object with a finalizer is not reachable, the collector resurrects the object and queues it to be finalized.
+  Once its finalizer runs, Lua marks the object as finalized.
+  2) The next time the collector detects that the object is not reachable, it deletes the object.
+
+  If we want to ensure that all garbage in our program has been actually released, we must call collectgarbage twice.
+  The second call will delete the objects that were finalized during the first call.
+]]
+--[[
   A = { x = 'This is A' }
   B = { f = A }
 
@@ -364,6 +412,11 @@ end
   collectgarbage() --> This is A
 --]]
 
+--[[
+  If an object is not collected until the end of a program, Lua will call its finalizer when the entire Lua state is closed.
+  This last feature allows a form of atexit functions in Lua, that is, functions that will run immediately before the program terminates.
+  All we have to do is to create a table with a finalizer and anchor it somewhere, for instance in a global variable:
+]]
 --[[
 do
   local t = {
@@ -380,6 +433,16 @@ end
 --> Finishing Lua program
 --]]
 
+--[[
+  Another interesting technique allows a program to call a given function every time Lua completes a collection cycle.
+  As a finalizer runs only once, the trick here is to make each finalization create a new object to run the next finalizer, as the code below.
+
+  The interaction of objects with finalizers and weak tables also has a subtlety.
+  At each cycle, the collector clears the values in weak tables before calling the finalizers, but it clears the keys after it.
+  The rationale for this behavior is that, frequently, we use tables with weak keys to hold properties of an object (as discussed in object attributes) and,
+  therefore, finalizers may need to access those attributes.
+  However, we use tables with weak values to reuse live objects; in this case, objects being finalized are not useful anymore.
+]]
 --[[
 do
   local mt = {
