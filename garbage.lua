@@ -296,15 +296,19 @@ do
   -- So, it needs to be forced to have weak values, since we want to remove each entry from gcProxies if its key (metatable) is not in use anymore anywhere.
   setmetatable(gcProxies, { __mode = 'kv' }) -- Make keys and values weak
 
-  local setmetatableDefault = setmetatable
-  setmetatable = function(table, metatable)
+  local _setmetatable = setmetatable
+  function setmetatable(table, metatable)
     if metatable.__gc then
       -- Create an empty userdata (the only values in Lua 5.1 that work with __gc metamethod is userdata).
       -- Then, we insert it in gcProxies (weak table); so when mt is not in use anymore, it will also remove it from gcProxies.
       gcProxies[metatable] = newproxy(true)
-      getmetatable(gcProxies[metatable]).__gc = function() metatable.__gc(table) end -- __gc from metatable of gcProxies[mt] call __gc from mt
+      getmetatable(gcProxies[metatable]).__gc = function()
+        if type(metatable.__gc) == 'function' then
+          metatable.__gc(table) -- __gc from metatable of gcProxies[mt] call __gc from mt
+        end
+      end
     end
-    return setmetatableDefault(table, metatable)
+    return _setmetatable(table, metatable)
   end
 end
 
