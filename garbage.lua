@@ -280,6 +280,7 @@ print_r(defaults) --> (table: 009E11F8) { } -- 'defaults' has not the default va
 
 
 -- Finalizers (__gc metamethod in metatables for Lua 5.2+, but I overwrited the setmetatable to support __gc in Lua 5.1)
+-- __gc means garbage collector
 
 --[[
   Although the goal of the garbage collector is to collect Lua objects, it can also help programs to release external resources.
@@ -300,14 +301,17 @@ do
   function setmetatable(table, metatable)
     if metatable.__gc then
       -- Create an empty userdata (the only values in Lua 5.1 that work with __gc metamethod is userdata).
-      -- Then, we insert it in gcProxies (weak table); so when mt is not in use anymore, it will also remove it from gcProxies.
+      -- Then, we insert it in gcProxies (weak table); so when metatable is not in use anymore, it will also remove it from gcProxies.
       gcProxies[metatable] = newproxy(true)
+
+      -- __gc from metatable of gcProxies[metatable] call __gc from metatable
       getmetatable(gcProxies[metatable]).__gc = function()
         if type(metatable.__gc) == 'function' then
-          metatable.__gc(table) -- __gc from metatable of gcProxies[mt] call __gc from mt
+          metatable.__gc(table)
         end
       end
     end
+
     return _setmetatable(table, metatable)
   end
 end
@@ -369,8 +373,8 @@ end
 ]]
 --[[
   mt = { __gc = function(o) print(o[1]) end }
-
   list = nil
+
   for i = 1, 3 do
     list = setmetatable({ i, link = list }, mt)
   end
