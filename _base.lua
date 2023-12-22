@@ -144,8 +144,85 @@ dofile('print_r.lua')
 
 
 
+-- Environment
 
+-- Prints all variable of the global environment
+--[[
+  print(_G._G == _G) --> true
 
+  for k, v in pairs(_G) do
+    print(k, v)
+  end
+  --]]
+
+-- loadstring
+--[[
+  x = 7
+  print(loadstring('return x')()) --> 7
+
+  local y = 8
+  print(loadstring('return y')()) --> nil -- Because 'y' is not in the _G environment
+  --]]
+
+-- _G
+--[[
+  x = 7
+  print(_G['x']) --> 7
+  print(_G.x) --> 7
+
+  _G.x = 8
+  print(x) --> 8
+
+  _G['y'] = 9
+  _G['x'] = _G['y'] -- Don't do this. It is just a complicated way to write `x = y`.
+  print(x) --> 9
+  --]]
+
+-- getfield
+-- The pattern iterates over all identifiers in f.
+--[[
+  x = { y = { z = 7 } }
+  print(_G['x.y.z']) --> nil
+
+  function getfield(field)
+    local value = _G -- Start with the table of globals
+    for k in field:gmatch('[%a_][%w_]*') do
+      value = value[k]
+    end
+    return value
+  end
+  print(getfield('x.y.z')) --> 7
+  --]]
+
+-- setfield
+--[[
+  The pattern there captures the field name in the variable w and an optional following dot in the variable d.
+  If a field name is not followed by a dot, then it is the last name.
+  ]]
+--[[
+  function getfield(field)
+    local value = _G -- Start with the table of globals
+    for k in field:gmatch('[%a_][%w_]*') do
+      value = value[k]
+    end
+    return value
+  end
+  function setfield(field, value)
+    local t = _G -- Start with the table of globals
+    for k, v in field:gmatch('([%a_][%w_]*)(%.?)') do
+      if v == '.' then -- Not last name
+        t[k] = t[k] or { } -- Create table if absent
+        t = t[k] -- Get above table
+      else -- Last name
+        t[k] = value -- Do the assignment
+      end
+    end
+  end
+
+  setfield('x.y.z', 7)
+  print(x.y.z) --> 7
+  print(getfield('x.y.z')) --> 7
+  --]]
 
 
 
