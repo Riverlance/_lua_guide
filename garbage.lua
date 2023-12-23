@@ -294,7 +294,7 @@ do
   local gcProxies = { }
 
   -- The values in gcProxies are strong because they refer to their own keys.
-  -- So, it needs to be forced to have weak values, since we want to remove each entry from gcProxies if its key (metatable) is not in use anymore anywhere.
+  -- So, it needs to be forced to have also weak values, since we want to remove each entry from gcProxies if its key (metatable) is not in use anymore anywhere.
   setmetatable(gcProxies, { __mode = 'kv' }) -- Make keys and values weak
 
   local _setmetatable = setmetatable
