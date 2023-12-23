@@ -27,7 +27,7 @@ function dumpvar(data)
       end
     elseif t == 'number' then
       buffer = string.format('%s%s (%s)\n', buffer, str, t)
-    elseif t == 'userdata' or t == 'function' then
+    elseif t == 'userdata' or t == 'function' or t == 'thread' then
       buffer = string.format('%s(%s)\n', buffer, str)
     elseif t == 'nil' then
       buffer = string.format('%snil (%s)\n', buffer, t)
