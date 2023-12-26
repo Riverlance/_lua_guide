@@ -31,27 +31,34 @@ dofile('print_r.lua')
 -- 2nd usage idea
 -- Good idea if you don't need to put values inside a table
 --[[
-  -- Support to newprivateproxy()
+  -- Support to table parameter on newproxy
+  --[=[
+    local proxy = newproxy{ }
+    proxy.x = 7
+    print(proxy.x) --> 7
+    print((newproxy{y=8}).y) --> 8
+    print(newproxy(proxy).x) --> 7
+  ]=]
   do
     local proxiesData = { }
     setmetatable(proxiesData, { __mode = 'k' }) -- Make keys weak
 
-    ---
-    ---Returns an empty userdata which is possible to read/write values over it.
-    ---You cannot traverse the attached values, making them private (hidden, actually).
-    ---
-    ---```lua
-    ---local proxy = newprivateproxy()
-    ---proxy.x = 7
-    ---print(proxy.x) --> 7
-    ---```
-    ---
-    ---@return proxy
-    function newprivateproxy()
-      local proxy = newproxy(true)
-      local mt    = getmetatable(proxy)
+    local _newproxy = newproxy
+    ---@version 5.1
+    ---@param proxy boolean|table|userdata
+    ---@return userdata
+    ---@nodiscard
+    function newproxy(proxy)
+      if type(proxy) ~= 'table' then
+        return _newproxy(proxy)
+      end
 
-      function mt.__index(self, k) -- Provides default values for any object of Window
+      local values = proxy
+
+      proxy    = _newproxy(true)
+      local mt = getmetatable(proxy)
+
+      function mt.__index(self, k)
         return proxiesData[proxy] and proxiesData[proxy][k] or nil
       end
 
@@ -60,11 +67,16 @@ dofile('print_r.lua')
         proxiesData[proxy][k] = v
       end
 
+      -- Copy values to proxiesData
+      for k, v in pairs(values) do
+        proxy[k] = v
+      end
+
       return proxy
     end
   end
 
-  local myValues = newprivateproxy()
+  local myValues = newproxy{ }
 
   myValues.keyA = 7
   myValues.keyB = 8
@@ -74,4 +86,8 @@ dofile('print_r.lua')
 
   print(myValues.keyA) --> 7
   print(myValues.keyB) --> 8
+
+  print((newproxy{keyC=9}).keyC) --> 9
+  print(newproxy(myValues).keyA) --> 7
+  print(newproxy(myValues).keyB) --> 8
 --]]
