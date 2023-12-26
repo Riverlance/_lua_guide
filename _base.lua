@@ -153,7 +153,7 @@ dofile('print_r.lua')
   for k, v in pairs(_G) do
     print(k, v)
   end
-  --]]
+--]]
 
 -- loadstring
 --[[
@@ -162,7 +162,7 @@ dofile('print_r.lua')
 
   local y = 8
   print(loadstring('return y')()) --> nil -- Because 'y' is not in the _G environment
-  --]]
+--]]
 
 -- _G
 --[[
@@ -176,7 +176,7 @@ dofile('print_r.lua')
   _G['y'] = 9
   _G['x'] = _G['y'] -- Don't do this. It is just a complicated way to write `x = y`.
   print(x) --> 9
-  --]]
+--]]
 
 -- getfield
 -- The pattern iterates over all identifiers in f.
@@ -192,7 +192,7 @@ dofile('print_r.lua')
     return value
   end
   print(getfield('x.y.z')) --> 7
-  --]]
+--]]
 
 -- setfield
 --[[
@@ -222,7 +222,7 @@ dofile('print_r.lua')
   setfield('x.y.z', 7)
   print(x.y.z) --> 7
   print(getfield('x.y.z')) --> 7
-  --]]
+--]]
 
 
 

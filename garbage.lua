@@ -81,7 +81,7 @@ dofile('print_r.lua')
 
     return res
   end
-  --]]
+--]]
 
 --[[
   The memorization technique is useful also to ensure the uniqueness of some kind of object.

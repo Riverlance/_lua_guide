@@ -459,7 +459,7 @@ dofile('print_r.lua')
 
 
 
--- Coroutines as iterators
+-- Example - Coroutines as iterators (3 times slower; useful only if you need to use a pair resume–yield in each iteration)
 
 --[[
   We can see loop iterators as a particular example of the producer–consumer pattern:
