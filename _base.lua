@@ -233,6 +233,27 @@ dofile('print_r.lua')
 
 
 
+-- Downloading an image from Twitter
+
+--[[
+  local http = require('socket.http')
+
+  -- Retrieve the content of a URL
+  function downloadFile(address)
+    local body, status, header, request = http.request(address) -- address: HTTP support only, not HTTPS
+    if body == '' then
+      error(('[Error %d] %s'):format(status, request))
+    end
+
+    -- Save the content to a file
+    local filename = address:match('/(%w+[.]jpg)')
+    local file     = assert(io.open(('data/downloads/%s'):format(filename), 'wb')) -- Open in 'binary' mode
+    file:write(body)
+    file:close()
+  end
+
+  downloadFile('https://pbs.twimg.com/media/FdcXkObUAAEDnk3.jpg')
+--]]
 
 
 
