@@ -6,8 +6,21 @@ dofile('print_r.lua')
 -- Basics
 
 --[[
-  Lua packs all its coroutine-related functions in the table coroutine.
-  The function create creates new coroutines.
+  We do not need coroutines very often, but when we do, it is an unparalleled feature.
+  Coroutines can literally turn upside-down the relationship between callers and callees,
+  and this flexibility solves what I call the "who-is-the-boss" (or "who-has-the-main-loop") problem in software architecture.
+
+  A coroutine is similar to a thread (in the sense of multithreading, but still synchronously):
+  it is a line of execution, with its own stack, its own local variables, and its own instruction pointer;
+  it shares global variables and mostly anything else with other coroutines.
+
+  The main difference between threads and coroutines is that a multithreaded program runs several threads in parallel,
+  while coroutines are collaborative (and synchronously):
+  at any given time, a program with coroutines is running only one of its coroutines,
+  and this running coroutine suspends its execution only when it explicitly requests to be suspended.
+
+  Lua packs all its coroutine-related functions in the table `coroutine`.
+  The function `create` creates new coroutines.
   It has a single argument, a function with the code that the coroutine will run (the coroutine body).
   It returns a value of type "thread", which represents the new coroutine.
   Often, the argument to create is an anonymous function, like here:
