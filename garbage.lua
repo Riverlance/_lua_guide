@@ -279,6 +279,120 @@ print_r(defaults) --> (table: 009E11F8) { } -- 'defaults' has not the default va
 
 
 
+-- Weak tables - Resume
+--[[
+  Weak tables are mainly used in situations where you want to track references to objects and automatically remove them when they are no longer in use.
+  Here's a simple guideline on when to use weak keys or weak values for tables:
+
+  Weak Keys:
+    Use weak keys when the keys in your table are objects and you want Lua to automatically remove entries
+    from the table when the keys are no longer referenced by any other part of your code.
+    Weak keys are useful when you want to track objects, like tables, that should be removed
+    from the table when they are garbage collected.
+
+  Weak Values:
+    Use weak values when you want Lua to automatically remove entries
+    from the table when the values are no longer referenced by any other part of your code.
+    Weak values are handy when you want to track objects, like functions or userdata, that should be removed
+    from the table when they are garbage collected.
+
+  Here's an example illustrating the use of weak keys and weak values:
+]]
+--[[
+  -- Weak keys example
+  local t   = { }
+  local key = { }
+  setmetatable(t, { __mode = 'k' }) -- Make keys weak
+
+  t[key] = 'value'
+  key    = nil -- Remove reference to the key
+  -- The entry will be automatically removed from the table as the key is no longer referenced
+
+  -- Weak values example
+  local t     = { }
+  local value = { }
+  setmetatable(t, { __mode = 'v' }) -- Make values weak
+
+  t['key'] = value
+  value    = nil -- Remove reference to the value
+  -- The entry will be automatically removed from the table as the value is no longer referenced
+--]]
+
+-- Weak keys
+-- key should be referenced somewhere, otherwise, the item will be removed
+--[[
+  local t, k = { }, { }
+  setmetatable(t, { __mode = 'k' }) -- Make keys weak
+  t[k] = { x = 7 }
+
+  -- k still have a reference to the key of the item, so the item t[k] won't be removed
+  print_r(t) --> { [k] = { x = 7 } }
+  collectgarbage()
+
+  print_r(t) --> { [k] = { x = 7 } }
+
+  k = nil -- k no longer have a reference (and nothing else) to the key of the item, so the item t[k] will be removed
+  collectgarbage()
+  print_r(t) --> { }
+--]]
+
+-- Weak values
+-- value should be referenced somewhere, otherwise, the item will be removed
+--[[
+  local t, k = { }, { }
+  setmetatable(t, { __mode = 'v' }) -- Make values weak
+  t[k] = { x = 7 }
+
+  local refCopy = t[k] -- refCopy have a reference to the value of the item, so the item t[k] won't be removed
+  print_r(t) --> { [k] = { x = 7 } }
+  collectgarbage()
+
+  print_r(t) --> { [k] = { x = 7 } }
+
+  refCopy = nil -- refCopy no longer have a reference (and nothing else) to the value of the item, so the item t[k] will be removed
+  collectgarbage()
+  print_r(t) --> { }
+--]]
+
+-- Weak keys and values
+-- key and value should be referenced somewhere, otherwise, the item will be removed
+--[[
+  local t, k = { }, { }
+  setmetatable(t, { __mode = 'kv' }) -- Make keys and values weak
+  t[k] = { x = 7 }
+
+  local refCopy = t[k] -- refCopy have a reference to the value of the item, so the item t[k] won't be removed
+  print_r(t) --> { [k] = { x = 7 } }
+  collectgarbage()
+
+  print_r(t) --> { [k] = { x = 7 } }
+
+  -- refCopy no longer have a reference (and nothing else) to the value of the item, so the item t[k] will be removed,
+  -- even knowing that k still have a reference to the key of the item
+  refCopy = nil
+  collectgarbage()
+  print_r(t) --> { }
+--]]
+--[[
+  local t, k = { }, { }
+  setmetatable(t, { __mode = 'kv' }) -- Make keys and values weak
+  t[k] = { x = 7 }
+
+  local refCopy = t[k] -- refCopy have a reference to the value of the item, so the item t[k] won't be removed
+  print_r(t) --> { [k] = { x = 7 } }
+  collectgarbage()
+
+  print_r(t) --> { [k] = { x = 7 } }
+
+  -- k no longer have a reference (and nothing else) to the key of the item, so the item t[k] will be removed,
+  -- even knowing that refCopy have a reference to the value of the item
+  k = nil
+  collectgarbage()
+  print_r(t) --> { }
+--]]
+
+
+
 -- Finalizers (__gc metamethod in metatables for Lua 5.2+, but I overwrited the setmetatable to support __gc in Lua 5.1)
 -- __gc means garbage collector
 
