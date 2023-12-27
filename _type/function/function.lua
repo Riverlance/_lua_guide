@@ -151,7 +151,12 @@ print(unpack{ 7, 8, 9 }) --> 7 8 9
 
 
 
--- As first-class values, higher-order function (callback as parameter, e.g, `table.sort`)
+--[[
+  First-class value: A value that can be stored in a variable.
+  Because functions are first-class values in Lua, a function may not have a name, or may have several names.
+
+  Higher-order function: A function that takes another function as an argument (callback as parameter, e.g, `table.sort`).
+]]
 
 --[[
   _print = print -- Copy `print` callback to `_print`
@@ -198,7 +203,7 @@ print(unpack{ 7, 8, 9 }) --> 7 8 9
   The interesting point in this last example is that the anonymous function given to `sort` accesses `grades`, which is a parameter to the enclosing function `sortbygrade`.
   Inside this anonymous function, `grades` is neither a global variable nor a local variable, but what we call a non-local variable (or upvalue).
 
-  Functions, being first-class values, can escape the original scope of their variables.
+  Functions, being first-class values (value that can be stored in a variable), can escape the original scope of their variables.
   Consider the following code:
 ]]
 --[[
