@@ -71,6 +71,7 @@ dofile('print_r.lua')
 
 
 -- Precedence
+
 --[[
   Operator precedence in Lua follows the table below, from the higher to the lower priority:
 
@@ -223,6 +224,25 @@ dofile('print_r.lua')
   print(x.y.z) --> 7
   print(getfield('x.y.z')) --> 7
 --]]
+
+
+
+-- Reflection
+
+--[[
+  Reflection refers to the ability to dynamically examine and manipulate the structure and behavior of objects, variables, and functions during runtime.
+  It allows developers to obtain information about Lua objects, such as their type, methods, properties, and other characteristics, and perform operations based on that knowledge.
+  Reflection features include the ability to iterate over tables, query the metatable of an object, access and modify fields dynamically,
+  and invoke functions indirectly using their names as strings.
+
+  Reflection is a powerful technique that enables dynamic and flexible programming by allowing Lua scripts to adapt and respond to changing conditions at runtime.
+  Usage examples:
+  - You could debug, for example, when the code C++ code crashed and you need to debug the values of Lua code through prompt commands.
+  - You want to take some extra informations about your code, like how many times a function is executed.
+  - Maybe even to build your own debugger.
+
+  Readmore about it in 'Part III. Lua-isms - Chapter 25. Reflection'.
+]]
 
 
 
