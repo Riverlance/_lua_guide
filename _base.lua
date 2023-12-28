@@ -237,7 +237,6 @@ dofile('print_r.lua')
 
   Reflection is a powerful technique that enables dynamic and flexible programming by allowing Lua scripts to adapt and respond to changing conditions at runtime.
   Usage examples:
-  - You could debug, for example, when the code C++ code crashed and you need to debug the values of Lua code through prompt commands.
   - You want to take some extra informations about your code, like how many times a function is executed.
   - Maybe even to build your own debugger.
 
