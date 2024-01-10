@@ -133,7 +133,7 @@ do
           return ret
         end
         for i = 1, #parents do
-          ret = parents[i]:__onCall(...)
+          ret = parents[i].__onCall(self, ...)
           if ret ~= nil then
             return ret
           end
