@@ -38,18 +38,33 @@ end
 
 
 do
-  local parentsKey = { } -- Key id to alloc parents on class
+  local metaValues    = { } -- Table for the class to alloc meta values that won't be copied with table.copy; internal usage only
+  local privateValues = { } -- Table for the user to alloc values that won't be copied with table.copy; useful for subclasses
+
+  local rawValuesKey  = { } -- Key id to alloc raw values of class
+  local parentsKey    = { } -- Key id to alloc parents
 
   function createClass(class, ...) -- (class[, ...parents...])
-    class            = class or { }
+    local rawValues  = class
     local parents    = {...} -- List of parents (superclasses)
     local allClasses = { } -- Same as the list of parents, but with class as first
 
-    -- class has to be a table
-    assert(type(class) == 'table', "Attempt to create a class with non-table value.")
+    class = table.copy(rawValues) or { }
 
-    -- Attach parents on class
-    class[parentsKey] = parents
+    assert(type(class) == 'table', "Attempt to create a class with non-table value.")
+    do
+      local mt = getmetatable(class)
+      assert(not mt or not mt.__index, "Attempt to create a class with an index already assigned.")
+    end
+
+    metaValues[class]    = { }
+    privateValues[class] = { }
+
+    -- Attach raw values
+    metaValues[class][rawValuesKey] = rawValues
+
+    -- Attach parents
+    metaValues[class][parentsKey] = parents
 
     -- Fill allClasses
     allClasses[#allClasses + 1] = class
@@ -58,7 +73,68 @@ do
     end
 
     -- Prepare class and its parents
-    for i = 1, #allClasses do
+    do
+      -- Method - getPrivateValue(key)
+      if not class.getPrivateValue then
+        function class.getPrivateValue(key)
+          return privateValues[class][key]
+        end
+      end
+
+      -- Method - setPrivateValue(key, value)
+      if not class.setPrivateValue then
+        function class.setPrivateValue(key, value)
+          privateValues[class][key] = value
+        end
+      end
+
+      -- Method - getRawValues()
+      if not class.getRawValues then
+        function class.getRawValues()
+          return metaValues[class][rawValuesKey]
+        end
+      end
+
+      -- Method - __isInstanceOf
+      if not class.__isInstanceOf then
+        function class.__isInstanceOf(obj, classToCompare)
+          local mt = getmetatable(obj)
+          if mt then
+            return mt.__index == classToCompare
+          end
+          return false
+        end
+      end
+
+      -- Method - __isChildOf
+      if not class.__isChildOf then
+        function class.__isChildOf(classToCompare)
+          local _parents = metaValues[class] and metaValues[class][parentsKey] or { }
+          for i = 1, #_parents do
+            -- The parent list of actual class contains classToCompare
+            if _parents[i] == classToCompare then
+              return true
+            end
+          end
+          return false
+        end
+      end
+
+      -- Method - __isParentOf
+      if not class.__isParentOf then
+        function class.__isParentOf(classToCompare)
+          local _parents = metaValues[classToCompare] and metaValues[classToCompare][parentsKey] or { }
+          for i = 1, #_parents do
+            -- Actual class is inside the parent list of classToCompare
+            if class == _parents[i] then
+              return true
+            end
+          end
+          return false
+        end
+      end
+    end
+    for i = 1, #allClasses do -- move to class instead of _class
       local _class = allClasses[i]
 
       -- Callback - __onCall
@@ -79,45 +155,6 @@ do
       if not _class.__onNew then
         function _class.__onNew()
           -- Do nothing
-        end
-      end
-
-      -- Method - __isInstanceOf
-      if not _class.__isInstanceOf then
-        function _class.__isInstanceOf(obj, classToCompare)
-          local mt = getmetatable(obj)
-          if mt then
-            return mt.__index == classToCompare
-          end
-          return false
-        end
-      end
-
-      -- Method - __isChildOf
-      if not _class.__isChildOf then
-        function _class.__isChildOf(classToCompare)
-          local _parents = _class[parentsKey]
-          for i = 1, #_parents do
-            -- The parent list of actual class contains classToCompare
-            if _parents[i] == classToCompare then
-              return true
-            end
-          end
-          return false
-        end
-      end
-
-      -- Method - __isParentOf
-      if not _class.__isParentOf then
-        function _class.__isParentOf(classToCompare)
-          local _parents = classToCompare[parentsKey]
-          for i = 1, #_parents do
-            -- Actual class is inside the parent list of classToCompare
-            if _class == _parents[i] then
-              return true
-            end
-          end
-          return false
         end
       end
     end
@@ -175,7 +212,7 @@ do
 
       -- Duplicate tables of obj (except from variables that the key name starts with '__' and from tables with metatable)
       for k, v in pairs(class) do
-        if (type(k) == 'string' and not k:starts('__')) and type(v) == 'table' and
+        if type(k) == 'string' and not k:starts('__') and type(v) == 'table' and
            not getmetatable(v) and obj[k] == v -- Has not metatable and has v is original value of class
         then
           obj[k] = table.copy(v)
@@ -193,6 +230,18 @@ do
 
     return class
   end
+end
+
+function isInstanceOf(class, classToCompare)
+  return getmetatable(class) and class.__isInstanceOf and class:__isInstanceOf(classToCompare)
+end
+
+function isChildOf(class, classToCompare)
+  return getmetatable(class) and class.__isChildOf and class:__isChildOf(classToCompare)
+end
+
+function isParentOf(class, classToCompare)
+  return getmetatable(class) and class.__isParentOf and class:__isParentOf(classToCompare)
 end
 
 
