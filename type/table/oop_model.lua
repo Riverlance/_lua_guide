@@ -71,6 +71,34 @@ do
 
     -- Prepare class and its parents
     do
+      -- Callback - class:__onCall(...)
+      if not class.__onCall then
+        function class.__onCall()
+          return nil
+        end
+      end
+
+      -- Callback - class:__onCheckNew(obj, ...)
+      if not class.__onCheckNew then
+        function class.__onCheckNew()
+          return true
+        end
+      end
+
+      -- Callback - class:__onNew(obj, ...)
+      if not class.__onNew then
+        function class.__onNew()
+          -- Do nothing
+        end
+      end
+
+      -- Method - getRawValues()
+      if not class.getRawValues then
+        function class.getRawValues()
+          return metaValues[class].rawValues
+        end
+      end
+
       -- Method - getPrivateValue(key)
       if not class.getPrivateValue then
         function class.getPrivateValue(key)
@@ -82,13 +110,6 @@ do
       if not class.setPrivateValue then
         function class.setPrivateValue(key, value)
           privateValues[class][key] = value
-        end
-      end
-
-      -- Method - getRawValues()
-      if not class.getRawValues then
-        function class.getRawValues()
-          return metaValues[class].rawValues
         end
       end
 
@@ -128,30 +149,6 @@ do
             end
           end
           return false
-        end
-      end
-    end
-    for i = 1, #allClasses do -- move to class instead of _class
-      local _class = allClasses[i]
-
-      -- Callback - __onCall
-      if not _class.__onCall then
-        function _class.__onCall()
-          return nil
-        end
-      end
-
-      -- Callback - __onCheckNew
-      if not _class.__onCheckNew then
-        function _class.__onCheckNew()
-          return true
-        end
-      end
-
-      -- Callback - __onNew
-      if not _class.__onNew then
-        function _class.__onNew()
-          -- Do nothing
         end
       end
     end
