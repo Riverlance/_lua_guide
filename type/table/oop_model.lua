@@ -227,15 +227,15 @@ do
 end
 
 function isInstanceOf(class, ...)
-  return getmetatable(class) and class.__isInstanceOf and class:__isInstanceOf(...)
+  return getmetatable(class) and class.__isInstanceOf and class:__isInstanceOf(...) or false
 end
 
 function isChildOf(class, ...)
-  return getmetatable(class) and class.__isChildOf and class:__isChildOf(...)
+  return getmetatable(class) and class.__isChildOf and class:__isChildOf(...) or false
 end
 
 function isParentOf(class, ...)
-  return getmetatable(class) and class.__isParentOf and class:__isParentOf(...)
+  return getmetatable(class) and class.__isParentOf and class:__isParentOf(...) or false
 end
 
 
