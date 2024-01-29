@@ -41,9 +41,6 @@ do
   local metaValues    = { } -- Table for the class to alloc meta values that won't be copied with table.copy; internal usage only
   local privateValues = { } -- Table for the user to alloc values that won't be copied with table.copy; useful for subclasses
 
-  local rawValuesKey  = { } -- Key id to alloc raw values of class
-  local parentsKey    = { } -- Key id to alloc parents
-
   function createClass(class, ...) -- (class[, ...parents...])
     local rawValues  = class
     local parents    = {...} -- List of parents (superclasses)
@@ -61,10 +58,10 @@ do
     privateValues[class] = { }
 
     -- Attach raw values
-    metaValues[class][rawValuesKey] = rawValues
+    metaValues[class].rawValues = rawValues
 
     -- Attach parents
-    metaValues[class][parentsKey] = parents
+    metaValues[class].parents = parents
 
     -- Fill allClasses
     allClasses[#allClasses + 1] = class
@@ -91,7 +88,7 @@ do
       -- Method - getRawValues()
       if not class.getRawValues then
         function class.getRawValues()
-          return metaValues[class][rawValuesKey]
+          return metaValues[class].rawValues
         end
       end
 
@@ -109,7 +106,7 @@ do
       -- Method - __isChildOf
       if not class.__isChildOf then
         function class.__isChildOf(classToCompare)
-          local _parents = metaValues[class] and metaValues[class][parentsKey] or { }
+          local _parents = metaValues[class] and metaValues[class].parents or { }
           for i = 1, #_parents do
             -- The parent list of actual class contains classToCompare
             if _parents[i] == classToCompare then
@@ -123,7 +120,7 @@ do
       -- Method - __isParentOf
       if not class.__isParentOf then
         function class.__isParentOf(classToCompare)
-          local _parents = metaValues[classToCompare] and metaValues[classToCompare][parentsKey] or { }
+          local _parents = metaValues[classToCompare] and metaValues[classToCompare].parents or { }
           for i = 1, #_parents do
             -- Actual class is inside the parent list of classToCompare
             if class == _parents[i] then
