@@ -92,23 +92,23 @@ do
         end
       end
 
-      -- Method - getRawValues()
-      if not class.getRawValues then
-        function class.getRawValues()
+      -- Method - __getRawValues()
+      if not class.__getRawValues then
+        function class.__getRawValues()
           return metaValues[class].rawValues
         end
       end
 
-      -- Method - getPrivateValue(key)
-      if not class.getPrivateValue then
-        function class.getPrivateValue(key)
+      -- Method - __getPrivateValue(key)
+      if not class.__getPrivateValue then
+        function class.__getPrivateValue(key)
           return privateValues[class][key]
         end
       end
 
-      -- Method - setPrivateValue(key, value)
-      if not class.setPrivateValue then
-        function class.setPrivateValue(key, value)
+      -- Method - __setPrivateValue(key, value)
+      if not class.__setPrivateValue then
+        function class.__setPrivateValue(key, value)
           privateValues[class][key] = value
         end
       end
@@ -226,16 +226,16 @@ do
   end
 end
 
-function isInstanceOf(class, classToCompare)
-  return getmetatable(class) and class.__isInstanceOf and class:__isInstanceOf(classToCompare)
+function isInstanceOf(class, ...)
+  return getmetatable(class) and class.__isInstanceOf and class:__isInstanceOf(...)
 end
 
-function isChildOf(class, classToCompare)
-  return getmetatable(class) and class.__isChildOf and class:__isChildOf(classToCompare)
+function isChildOf(class, ...)
+  return getmetatable(class) and class.__isChildOf and class:__isChildOf(...)
 end
 
-function isParentOf(class, classToCompare)
-  return getmetatable(class) and class.__isParentOf and class:__isParentOf(classToCompare)
+function isParentOf(class, ...)
+  return getmetatable(class) and class.__isParentOf and class:__isParentOf(...)
 end
 
 
@@ -414,4 +414,26 @@ end
   print(acc:balance()) --> nil
   acc = nil
   print(acc) --> nil
+
+
+
+  -- Class A with Subclass
+
+  print('\n> Class A with Subclass')
+  local ClassA = createClass{ x = 7 }
+  ClassA.__setPrivateValue('Subclass', createClass{ _x = 70 })
+
+  local ASubclass = ClassA.__getPrivateValue('Subclass')
+  print_r(ASubclass) --> { ..., ["_x"] = 70 (number), ... }
+  print(ASubclass._x) --> 70
+
+  -- Class B that duplicates Subclass from A
+
+  print('\n> Class B that duplicates Subclass from A')
+  local ClassB = createClass({ y = 8 }, ClassA)
+  ClassB.__setPrivateValue('Subclass', createClass({ _y = 80 }, ASubclass.__getRawValues()))
+
+  local BSubclass = ClassB.__getPrivateValue('Subclass')
+  print_r(BSubclass) --> { ..., ["_y"] = 80 (number), ... }
+  print(BSubclass._x, BSubclass._y) --> 70 80
 --]]
